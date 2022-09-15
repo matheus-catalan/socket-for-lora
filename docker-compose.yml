@@ -1,0 +1,16 @@
+version: "3"
+services:
+  db:
+    image: "postgres:13"
+    container_name: db
+    restart: always
+    tty: true
+    environment:
+      POSTGRES_DB: telemetry
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    volumes:
+      - ./db-data/:/var/lib/postgresql/data/
+    ports:
+      - 5431:5432
+    command: -p 5432
