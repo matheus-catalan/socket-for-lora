@@ -46,7 +46,13 @@ app.use((error, req, res, next) => {
 
 io.on("connection", (socket) => {
   console.log("Client Connect on socket")
+})
 
+io.on("set_port", (port) => {
+  setPort(port)
+})
+
+io.on("get_data", (socket) => {
   openPort()
     .then(() => {
       console.log("Connected on port serial!")
@@ -61,10 +67,6 @@ io.on("connection", (socket) => {
       console.log(`error on Connected port serial: ${err}`)
       socket.emit("connect_serial", { status: false, error: err })
     })
-})
-
-io.on("set_port", (port) => {
-  setPort(port)
 })
 
 io.on("disconnect", () => {
