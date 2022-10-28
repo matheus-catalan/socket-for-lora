@@ -1,10 +1,8 @@
 const { SerialPort } = require("serialport")
 const { getData, setData } = require("../../models/log")
-const serial = new SerialPort({
-  path: "/dev/cu.usbmodem14101",
-  baudRate: 9600,
-  autoOpen: false,
-})
+const { getPort, setPort } = require("../../models/port")
+
+let serial = null
 
 let should_read = false
 var io = null
@@ -24,6 +22,17 @@ export function closePort() {
 
 export function openPort() {
   const promise = new Promise((resolve, reject) => {
+    let port = getPort()
+
+    if (port == null) {
+      reject("Port Serial not selected")
+    }
+    serial = new SerialPort({
+      path: port,
+      baudRate: 9600,
+      autoOpen: false,
+    })
+
     serial.open((err) => {
       if (err) {
         serial.close()

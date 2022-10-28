@@ -14,6 +14,8 @@ const io = new Server(server, {
     credentials: true,
   },
 })
+const { setPort } = require("./src/models/port")
+
 const {
   openPort,
   closePort,
@@ -59,6 +61,10 @@ io.on("connection", (socket) => {
       console.log(`error on Connected port serial: ${err}`)
       socket.emit("connect_serial", { status: false, error: err })
     })
+})
+
+io.on("set_port", (port) => {
+  setPort(port)
 })
 
 io.on("disconnect", () => {
