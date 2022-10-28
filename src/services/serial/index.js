@@ -1,10 +1,11 @@
 const { SerialPort } = require("serialport")
 const { getData, setData } = require("../../models/log")
 const serial = new SerialPort({
-  path: "/dev/cu.usbserial-1420",
+  path: "/dev/cu.usbmodem14101",
   baudRate: 9600,
   autoOpen: false,
 })
+
 let should_read = false
 var io = null
 
@@ -25,6 +26,7 @@ export function openPort() {
   const promise = new Promise((resolve, reject) => {
     serial.open((err) => {
       if (err) {
+        serial.close()
         reject(err)
       } else {
         serial.flush()
@@ -44,16 +46,29 @@ export function readSerial() {
 
     if (log != null) {
       try {
-        let data = JSON.parse(log.toString())
+        let data = log.toString()
+        console.log(data)
+        console.log(typeof data)
+        data = data.replace("\n", "")
+        data = data.replace("\t", "")
+        data = data.replace("   NAN", null)
+        data = data.split("/")
+
+        // if (data.length != 11)
+
         setData(data)
         io.emit("data", getData())
       } catch (err) {
+        console.log("connect_serial", {
+          status: false,
+          message: `error on connection port serial or read serial: ${err}`,
+        })
         io.emit("connect_serial", {
           status: false,
-          message: "error on connection port serial!",
+          message: "error on connection port serial or read serial!",
         })
       }
     }
   }
-  setTimeout(readSerial, 500)
+  setTimeout(readSerial, 2500)
 }
