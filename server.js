@@ -10,8 +10,6 @@ const { Server } = require("socket.io")
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
-    credentials: true,
   },
 })
 const { setPort } = require("./src/models/port")
@@ -45,33 +43,43 @@ app.use((error, req, res, next) => {
 })
 
 io.on("connection", (socket) => {
-  console.log("Client Connect on socket")
-})
+  console.log(`Client ${socket.id} on socket`)
 
-io.on("set_port", (port) => {
-  setPort(port)
-})
+  socket.emit("connected", { status: true })
 
-io.on("get_data", (socket) => {
-  openPort()
-    .then(() => {
-      console.log("Connected on port serial!")
-      socket.emit("connect_serial", {
-        status: true,
-        message: "Connected on port serial!",
+  socket.on("set_port", (port, callback) => {
+    console.log(port);
+    setPort(port)
+    callback({ status: true });
+  })
+
+  socket.on("get_data", (callback) => {
+    openPort()
+      .then((status) => {
+        if(!status) {
+          throw new Error("Port not supported");
+        }
+        console.log("Connected on port serial!")
+        callback({
+          status: true,
+          message: "Connected on port serial!",
+        });
+        set_io(socket)
+        readSerial()
       })
-      set_io(socket)
-      readSerial()
-    })
-    .catch((err) => {
-      console.log(`error on Connected port serial: ${err}`)
-      socket.emit("connect_serial", { status: false, error: err })
-    })
-})
+      .catch((err) => {
+        console.log(`error on Connected port serial: ${err}`)
+        // callback({
+        //   status: false,
+        //   message: `error on Connected port serial: ${err}`,
+        // });
+      })
+  })
 
-io.on("disconnect", () => {
-  closePort()
-  console.log("Disconnected on port serial!")
+  socket.on("disconnect", () => {
+    closePort()
+    console.log("Disconnected on port serial!")
+  })
 })
 
 app.set("io", io)

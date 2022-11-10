@@ -16,8 +16,10 @@ export function set_io(_io) {
 }
 
 export function closePort() {
-  serial.close()
-  serial.write("n")
+  if(serial) {
+    serial.close()
+    serial.write("n")
+  }
 }
 
 export function openPort() {
@@ -45,6 +47,9 @@ export function openPort() {
         resolve(true)
       }
     })
+  }).catch(err => {
+    console.log("ALO", err);
+    return false
   })
   return promise
 }
@@ -53,20 +58,22 @@ export function readSerial() {
   if (should_read) {
     const log = serial.read()
 
+    // console.log(log);
+
     if (log != null) {
       try {
         let data = log.toString()
-        console.log(data)
-        console.log(typeof data)
+        // console.log(data)
+        // console.log(typeof data)
         data = data.replace("\n", "")
         data = data.replace("\t", "")
-        data = data.replace("   NAN", null)
+        data = data.split(" ").join("")
+        data = data.replace(/NAN/gi, null)
         data = data.split("/")
 
-        // if (data.length != 11)
-
-        setData(data)
-        io.emit("data", getData())
+        if (data.length == 8) {
+          io.emit("data", data)
+        }
       } catch (err) {
         console.log("connect_serial", {
           status: false,
@@ -79,5 +86,5 @@ export function readSerial() {
       }
     }
   }
-  setTimeout(readSerial, 2500)
+  setTimeout(readSerial, 500)
 }
