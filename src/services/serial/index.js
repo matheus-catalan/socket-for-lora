@@ -1,6 +1,5 @@
 const { SerialPort } = require("serialport")
-const { getData, setData } = require("../../models/log")
-const { getPort, setPort } = require("../../models/port")
+const { getPort } = require("../../models/port")
 
 let serial = null
 
@@ -58,13 +57,9 @@ export function readSerial() {
   if (should_read) {
     const log = serial.read()
 
-    // console.log(log);
-
     if (log != null) {
       try {
         let data = log.toString()
-        // console.log(data)
-        // console.log(typeof data)
         data = data.replace("\n", "")
         data = data.replace("\t", "")
         data = data.split(" ").join("")
